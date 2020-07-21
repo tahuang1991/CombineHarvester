@@ -269,22 +269,22 @@ int main(int argc, char** argv) {
  });
 
 
-  // And convert any shapes in the CRs to lnN:
-  // Convert all shapes to lnN at this stage
+  //// And convert any shapes in the CRs to lnN:
+  //// Convert all shapes to lnN at this stage
 
-   //Replacing observation with the sum of the backgrounds (asimov) - nice to ensure blinding
-    auto bins = cb.cp().bin_set();
-    // For control region bins data (should) = sum of bkgs already
-    // useful to be able to check this, so don't do the replacement
-    // for these
-  if(!real_data){
-      for (auto b : cb.cp().FilterAll(BinIsControlRegion).bin_set()) {
-          std::cout << " - Replacing data with asimov in bin " << b << "\n";
-          cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
-            obs->set_shape(cb.cp().bin({b}).backgrounds().GetShape(), true);
-          });
-        }
-  }
+  // //Replacing observation with the sum of the backgrounds (asimov) - nice to ensure blinding
+  //  auto bins = cb.cp().bin_set();
+  //  // For control region bins data (should) = sum of bkgs already
+  //  // useful to be able to check this, so don't do the replacement
+  //  // for these
+  //if(!real_data){
+  //    for (auto b : cb.cp().FilterAll(BinIsControlRegion).bin_set()) {
+  //        std::cout << " - Replacing data with asimov in bin " << b << "\n";
+  //        cb.cp().bin({b}).ForEachObs([&](ch::Observation *obs) {
+  //          obs->set_shape(cb.cp().bin({b}).backgrounds().GetShape(), true);
+  //        });
+  //      }
+  //}
 
   //// and for checking the effect of negative bin contents
   //std::map<std::string, TH1F> before_rebin;
@@ -362,44 +362,45 @@ int main(int argc, char** argv) {
   //       }
   // }
 
-  // At this point we can fix the negative bins
-  cb.ForEachProc([](ch::Process *p) {
-    if (ch::HasNegativeBins(p->shape())) {
-      std::cout << "[Negative bins] Fixing negative bins for " << p->bin()
-                << "," << p->process() << "\n";
-      // std::cout << "[Negative bins] Before:\n";
-      // p->shape()->Print("range");
-      auto newhist = p->ClonedShape();
-      ch::ZeroNegativeBins(newhist.get());
-      // Set the new shape but do not change the rate, we want the rate to still
-      // reflect the total integral of the events
-      p->set_shape(std::move(newhist), false);
-      // std::cout << "[Negative bins] After:\n";
-      // p->shape()->Print("range");
-    }
-  });
+  //// At this point we can fix the negative bins
+  //cb.ForEachProc([](ch::Process *p) {
+  //  if (ch::HasNegativeBins(p->shape())) {
+  //    std::cout << "[Negative bins] Fixing negative bins for " << p->bin()
+  //              << "," << p->process() << "\n";
+  //    // std::cout << "[Negative bins] Before:\n";
+  //    // p->shape()->Print("range");
+  //    auto newhist = p->ClonedShape();
+  //    ch::ZeroNegativeBins(newhist.get());
+  //    // Set the new shape but do not change the rate, we want the rate to still
+  //    // reflect the total integral of the events
+  //    p->set_shape(std::move(newhist), false);
+  //    // std::cout << "[Negative bins] After:\n";
+  //    // p->shape()->Print("range");
+  //  }
+  //});
 
-  cb.ForEachSyst([](ch::Systematic *s) {
-    if (s->type().find("shape") == std::string::npos) return;
-    if (ch::HasNegativeBins(s->shape_u()) || ch::HasNegativeBins(s->shape_d())) {
-      std::cout << "[Negative bins] Fixing negative bins for syst" << s->bin()
-                << "," << s->process() << "," << s->name() << "\n";
-      // std::cout << "[Negative bins] Before:\n";
-      // s->shape_u()->Print("range");
-      // s->shape_d()->Print("range");
-      auto newhist_u = s->ClonedShapeU();
-      auto newhist_d = s->ClonedShapeD();
-      ch::ZeroNegativeBins(newhist_u.get());
-      ch::ZeroNegativeBins(newhist_d.get());
-      // Set the new shape but do not change the rate, we want the rate to still
-      // reflect the total integral of the events
-      s->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
-      // std::cout << "[Negative bins] After:\n";
-      // s->shape_u()->Print("range");
-      // s->shape_d()->Print("range");
-    }
-  });
+  //cb.ForEachSyst([](ch::Systematic *s) {
+  //  if (s->type().find("shape") == std::string::npos) return;
+  //  if (ch::HasNegativeBins(s->shape_u()) || ch::HasNegativeBins(s->shape_d())) {
+  //    std::cout << "[Negative bins] Fixing negative bins for syst" << s->bin()
+  //              << "," << s->process() << "," << s->name() << "\n";
+  //    // std::cout << "[Negative bins] Before:\n";
+  //    // s->shape_u()->Print("range");
+  //    // s->shape_d()->Print("range");
+  //    auto newhist_u = s->ClonedShapeU();
+  //    auto newhist_d = s->ClonedShapeD();
+  //    ch::ZeroNegativeBins(newhist_u.get());
+  //    ch::ZeroNegativeBins(newhist_d.get());
+  //    // Set the new shape but do not change the rate, we want the rate to still
+  //    // reflect the total integral of the events
+  //    s->set_shapes(std::move(newhist_u), std::move(newhist_d), nullptr);
+  //    // std::cout << "[Negative bins] After:\n";
+  //    // s->shape_u()->Print("range");
+  //    // s->shape_d()->Print("range");
+  //  }
+  //});
 
+//doing bin by bin error 
   cout << "Generating bbb uncertainties...";
   auto bbb = ch::BinByBinFactory()
     .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
