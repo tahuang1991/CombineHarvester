@@ -254,19 +254,19 @@ int main(int argc, char** argv) {
   }
 
 
- //Now delete processes with 0 yield
- cb.FilterProcs([&](ch::Process *p) {
-  bool null_yield = !(p->rate() > 0. || BinIsControlRegion(p));
-  if (null_yield){
-     std::cout << "[Null yield] Removing process with null yield: \n ";
-     std::cout << ch::Process::PrintHeader << *p << "\n"; 
-     cb.FilterSysts([&](ch::Systematic *s){
-       bool remove_syst = (MatchingProcess(*p,*s));
-       return remove_syst;
-    });
-  }
-  return null_yield;
- });
+ ////Now delete processes with 0 yield
+ //cb.FilterProcs([&](ch::Process *p) {
+ // bool null_yield = !(p->rate() > 0. || BinIsControlRegion(p));
+ // if (null_yield){
+ //    std::cout << "[Null yield] Removing process with null yield: \n ";
+ //    std::cout << ch::Process::PrintHeader << *p << "\n"; 
+ //    cb.FilterSysts([&](ch::Systematic *s){
+ //      bool remove_syst = (MatchingProcess(*p,*s));
+ //      return remove_syst;
+ //   });
+ // }
+ // return null_yield;
+ //});
 
 
   //// And convert any shapes in the CRs to lnN:
@@ -409,12 +409,13 @@ int main(int argc, char** argv) {
     .SetFixNorm(true)
     // .SetMergeZeroBins(false)
     .SetPoissonErrors(poisson_bbb);
-  for (auto chn : chns) {
-    std::cout << " - Doing bbb for channel " << chn << "\n";
-    bbb.MergeAndAdd(cb.cp().channel({chn}).process({"ZTT", "QCD", "W", "ZJ", "ZL", "TT", "VV", "Ztt", "ttbar", "EWK", "Fakes", "ZMM", "TTJ", "WJets", "Dibosons"}).FilterAll([](ch::Object const* obj) {
-                return BinIsControlRegion(obj);
-                }), cb);
-  }
+  bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+  //for (auto chn : chns) {
+  //  std::cout << " - Doing bbb for channel " << chn << "\n";
+  //  bbb.MergeAndAdd(cb.cp().channel({chn}).process({"TTbar","SingleTop","data_untagged","TTbar_untagged","SingleTop_untagged", "ttV","VV","Drell_Yan"}).FilterAll([](ch::Object const* obj) {
+  //              return BinIsControlRegion(obj);
+  //              }), cb);
+  //}
 
   //// And now do bbb for the control region with a slightly different config:
   //auto bbb_ctl = ch::BinByBinFactory()
