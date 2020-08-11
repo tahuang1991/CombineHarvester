@@ -63,9 +63,12 @@ int main(int argc, char** argv) {
   //string SM125= "";
   string mass = "300";
   //string input_folder = "/afs/cern.ch/work/t/tahuang/CombinedLimit/ForGithub/CMSSW_8_1_0/src/HiggsAnalysis/CombinedLimit/HH_WWbb/GGToX0ToHHTo2B2L2Nu_NoMjjbinsMjjcut_nnout_MTandMT2_MJJ_nnstep0p04_nncut0p0_limits/";
-  string input_folder = "GGToX0ToHHTo2B2L2Nu_NoMjjbinsMjjcut_nnout_MTandMT2_MJJ_nnstep0p04_nncut0p0_limits";
+  //string input_folder = "GGToX0ToHHTo2B2L2Nu_NoMjjbinsMjjcut_nnout_MTandMT2_MJJ_nnstep0p04_nncut0p0_limits";
+  //string input_folder = "HHbbWW_20200401_NNoutput_MjjCR_NNcutstudy1D";
+  string input_folder = "HHbbWW_20200401_NNoutput_MjjCR_NNcutstudy1D";
   string output_folder = "shapes/";
   string postfix="th1shapes";
+  string train="MTonly";
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
@@ -86,7 +89,8 @@ int main(int argc, char** argv) {
     ("control_region", po::value<int>(&control_region)->default_value(0))
     ("check_neg_bins", po::value<bool>(&check_neg_bins)->default_value(false))
     ("poisson_bbb", po::value<bool>(&poisson_bbb)->default_value(false))
-    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(true));
+    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(true))
+    ("training", po::value<string>(&train)->default_value("MTonly"));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -99,6 +103,7 @@ int main(int argc, char** argv) {
   //    {"tt"};
  //     {"mt"};
       {"MuMu","ElEl","MuEl"};
+
 
 
   map<string, VString> bkg_procs;
@@ -149,14 +154,13 @@ int main(int argc, char** argv) {
   //}
   //  vector<string> sig_procs = {"ggH","bbH"};
   for(auto chn : chns){
-    cb.AddObservations({mass}, {"GGToX0ToHHTo2B2L2Nu"}, {"13TeV"}, {chn}, cats);
+        cb.AddObservations({mass}, {"GGToX0ToHHTo2B2L2Nu_"+train+"_M"+mass}, {"13TeV"}, {chn}, cats);
 
-    // add background
-    cb.AddProcesses({mass}, {"GGToX0ToHHTo2B2L2Nu"}, {"13TeV"}, {chn}, bkg_procs[chn], cats, false);
+        // add background
+        cb.AddProcesses({mass}, {"GGToX0ToHHTo2B2L2Nu_"+train+"_M"+mass}, {"13TeV"}, {chn}, bkg_procs[chn], cats, false);
 
-    // add signal
-    cb.AddProcesses({mass}, {"GGToX0ToHHTo2B2L2Nu"}, {"13TeV"}, {chn}, {"Signal"}, cats, true);
-
+        // add signal
+        cb.AddProcesses({mass}, {"GGToX0ToHHTo2B2L2Nu_"+train+"_M"+mass}, {"13TeV"}, {chn}, {"Signal"}, cats, true);
 
     }
 
@@ -190,7 +194,7 @@ int main(int argc, char** argv) {
 
   cb.cp().channel({"MuEl"}).process({"Drell_Yan"}).AddSyst(cb, "dy_mc_xsec", "lnN", SystMap<>::init(1.05));
 
-
+  std::cout << "Testing here " << std::endl;
   cb.cp().AddSyst(cb,      "dy_rwgt_norm_$channel", "lnN", SystMap<channel, process>::init
 	  ({"MuMu"}, {"data_untagged"},      1.05)
 	  ({"MuMu"}, {"TTbar_untagged"},     1.05)
@@ -199,24 +203,32 @@ int main(int argc, char** argv) {
 	  ({"ElEl"}, {"TTbar_untagged"},     1.05)
 	  ({"ElEl"}, {"SingleTop_untagged"}, 1.05)
 	  );
- 
-  cb.cp().AddSyst(cb, "CMS_eff_mu", "shape", SystMap<channel>::init
+
+  for(auto chn : chns){
+    for (auto bkg : bkg_procs[chn]){
+      if (bkg != "data_untagged"){
+        std::cout << "Data untagged part " << std::endl;
+        cb.cp().process({bkg}).AddSyst(cb, "CMS_eff_mu", "shape", SystMap<channel>::init
 	  ({"MuMu"}, 1.00)
 	  ({"MuEl"}, 1.00));
-  cb.cp().AddSyst(cb, "CMS_iso_mu", "shape", SystMap<channel>::init
+        cb.cp().process({bkg}).AddSyst(cb, "CMS_iso_mu", "shape", SystMap<channel>::init
 	  ({"MuMu"}, 1.00)
 	  ({"MuEl"}, 1.00));
-  cb.cp().AddSyst(cb, "CMS_eff_e",  "shape", SystMap<channel>::init
+        cb.cp().process({bkg}).AddSyst(cb, "CMS_eff_e",  "shape", SystMap<channel>::init
 	  ({"ElEl"}, 1.00)
 	  ({"ElEl"}, 1.00));
-  cb.cp().AddSyst(cb, "CMS_iso_e",  "shape", SystMap<channel>::init
-	  ({"ElEl"}, 1.00)
-	  ({"ElEl"}, 1.00));
-  cb.cp().channel({"MuEl"}).AddSyst(cb, "CMS_eff_trigger_MuEl", "shape", SystMap<>::init(1.00));
-  cb.cp().channel({"MuMu"}).AddSyst(cb, "CMS_eff_trigger_MuMu", "shape", SystMap<>::init(1.00));
-  cb.cp().channel({"ElEl"}).AddSyst(cb, "CMS_eff_trigger_ElEl", "shape", SystMap<>::init(1.00));
+        //cb.cp().process({bkg}).AddSyst(cb, "CMS_iso_e",  "shape", SystMap<channel>::init
+	//  ({"ElEl"}, 1.00)
+	//  ({"ElEl"}, 1.00));
+        cb.cp().channel({"MuEl"}).process({bkg}).AddSyst(cb, "CMS_eff_trigger_MuEl", "shape", SystMap<>::init(1.00));
+        cb.cp().channel({"MuMu"}).process({bkg}).AddSyst(cb, "CMS_eff_trigger_MuMu", "shape", SystMap<>::init(1.00));
+        cb.cp().channel({"ElEl"}).process({bkg}).AddSyst(cb, "CMS_eff_trigger_ElEl", "shape", SystMap<>::init(1.00));
+      }
+    }
+  }
 
   //QCD for signal, TTbar, SingleTop, VV, DY
+  std::cout << "Adding processes" << std::endl;
   cb.cp().process({"Signal"}).AddSyst(cb, "QCDscaleSignal", "shape", SystMap<>::init(1.00));
   cb.cp().process({"VV"}).AddSyst(cb, "QCDscaleVV", "shape", SystMap<>::init(1.00));
   cb.cp().process({"ttV"}).AddSyst(cb, "QCDscalettV", "shape", SystMap<>::init(1.00));
@@ -229,7 +241,7 @@ int main(int argc, char** argv) {
 	  ({"ElEl"}, {"SingleTop"}, 1.00)
 	  ({"ElEl"}, {"SingleTop_untagged"}, 1.00)
 	  );
-  cb.cp().AddSyst(cb, "TTbar", "shape", SystMap<channel, process>::init
+  cb.cp().AddSyst(cb, "QCDscaleTTbar", "shape", SystMap<channel, process>::init
 	  ({"MuMu"}, {"TTbar"}, 1.00)
 	  ({"MuMu"}, {"TTbar_untagged"}, 1.00)
 	  ({"MuEl"}, {"TTbar"}, 1.00)
@@ -239,19 +251,25 @@ int main(int argc, char** argv) {
 
 
   //! [part7]
-  //extract the shapes from root file 
+  //extract the shapes from root file
+  std::cout << "Begin extracting" << std::endl; 
   for (string chn:chns){
+    std::cout << "extracting " << chn << std::endl;
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
 	     //GGToX0ToHHTo2B2L2Nu_M800_ElEl_th1shapes.root
-        input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
+        input_dir+train+"/"+mass+"/nnstep0p04_"+chn+"_M"+mass+"_shapes.root",
+        //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
-   //cb.cp().channel({chn}).process("Signal").ExtractShapes(
+      //cb.cp().channel({chn}).process("Signal").ExtractShapes(
+    std::cout << "Halfway" << std::endl;
     cb.cp().channel({chn}).signals().ExtractShapes(
-        input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
+        input_dir+train+"/"+mass+"/nnstep0p04_"+chn+"_M"+mass+"_shapes.root",       //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
+        //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
   }
+  std::cout << "End extracting" << std::endl;
 
 
  ////Now delete processes with 0 yield
@@ -454,12 +472,12 @@ int main(int argc, char** argv) {
   writer.SetWildcardMasses({});
   writer.SetVerbosity(1);
 
-  writer.WriteCards("cmb", cb);
+  writer.WriteCards(train+"/"+mass, cb);
   for (auto chn : chns) {
     // per-channel
     writer.WriteCards(chn, cb.cp().channel({chn}));
     // And per-channel-category
-    writer.WriteCards("GGToX0ToHHTo2B2L2Nu_"+chn, cb.cp().channel({chn}));
+    //writer.WriteCards("GGToX0ToHHTo2B2L2Nu_"+chn, cb.cp().channel({chn}));
   }
 
   cb.PrintAll();
