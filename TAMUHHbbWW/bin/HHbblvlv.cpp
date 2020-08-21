@@ -257,14 +257,14 @@ int main(int argc, char** argv) {
     std::cout << "extracting " << chn << std::endl;
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
 	     //GGToX0ToHHTo2B2L2Nu_M800_ElEl_th1shapes.root
-        input_dir+train+"/"+mass+"/nnstep0p04_"+chn+"_M"+mass+"_shapes.root",
+        input_dir+train+"/"+mass+"/2D_"+chn+"_M"+mass+"_shapes.root",
         //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
       //cb.cp().channel({chn}).process("Signal").ExtractShapes(
     std::cout << "Halfway" << std::endl;
     cb.cp().channel({chn}).signals().ExtractShapes(
-        input_dir+train+"/"+mass+"/nnstep0p04_"+chn+"_M"+mass+"_shapes.root",       //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
+        input_dir+train+"/"+mass+"/2D_"+chn+"_M"+mass+"_shapes.root",       //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
@@ -422,7 +422,7 @@ int main(int argc, char** argv) {
   cout << "Generating bbb uncertainties...";
   auto bbb = ch::BinByBinFactory()
     .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
-    .SetAddThreshold(0.)
+    .SetAddThreshold(0.05)
     .SetMergeThreshold(0.4)
     .SetFixNorm(true)
     // .SetMergeZeroBins(false)
@@ -470,15 +470,16 @@ int main(int argc, char** argv) {
   // We're not using mass as an identifier - which we need to tell the CardWriter
   // otherwise it will see "*" as the mass value for every object and skip it
   writer.SetWildcardMasses({});
-  writer.SetVerbosity(1);
+  writer.SetVerbosity(0); // Too much for 2D, getting broken pipe
+  //writer.SetVerbosity(1);
 
   writer.WriteCards(train+"/"+mass, cb);
-  for (auto chn : chns) {
+  //for (auto chn : chns) {
     // per-channel
-    writer.WriteCards(chn, cb.cp().channel({chn}));
+    //writer.WriteCards(chn, cb.cp().channel({chn}));
     // And per-channel-category
     //writer.WriteCards("GGToX0ToHHTo2B2L2Nu_"+chn, cb.cp().channel({chn}));
-  }
+  //}
 
   cb.PrintAll();
   cout << " done\n";
