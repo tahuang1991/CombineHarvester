@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
   string output_folder = "shapes/";
   string postfix="th1shapes";
   string train="MTonly";
+  string file_prefix="test";
   bool auto_rebin = false;
   bool manual_rebin = false;
   bool real_data = false;
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
   po::options_description config("configuration");
   config.add_options()
     ("mass,m", po::value<string>(&mass)->default_value(mass))
+    ("file_prefix", po::value<string>(&file_prefix)->default_value("test"))
     ("input_folder", po::value<string>(&input_folder)->default_value("GGToX0ToHHTo2B2L2Nu_NoMjjbinsMjjcut_nnout_MTandMT2_MJJ_nnstep0p04_nncut0p0_limits"))
     ("postfix", po::value<string>(&postfix)->default_value("th1shapes"))
     ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(false))
@@ -98,6 +100,7 @@ int main(int argc, char** argv) {
   //typedef vector<pair<int, string>> Categories;
   string input_dir;
   input_dir  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/TAMUHHbbWW/shapes/"+input_folder+"/";
+  input_dir  = input_folder;
 
   VString chns =
   //    {"tt"};
@@ -257,14 +260,14 @@ int main(int argc, char** argv) {
     std::cout << "extracting " << chn << std::endl;
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
 	     //GGToX0ToHHTo2B2L2Nu_M800_ElEl_th1shapes.root
-        input_dir+train+"/"+mass+"/2D_"+chn+"_M"+mass+"_shapes.root",
+        input_dir+train+"/"+mass+"/"+file_prefix+"_"+chn+"_M"+mass+"_shapes.root",
         //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
       //cb.cp().channel({chn}).process("Signal").ExtractShapes(
     std::cout << "Halfway" << std::endl;
     cb.cp().channel({chn}).signals().ExtractShapes(
-        input_dir+train+"/"+mass+"/2D_"+chn+"_M"+mass+"_shapes.root",       //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
+        input_dir+train+"/"+mass+"/"+file_prefix+"_"+chn+"_M"+mass+"_shapes.root",       //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         //input_dir+"GGToX0ToHHTo2B2L2Nu_M"+mass+"_"+chn+""+postfix+".root",
         "$PROCESS",
         "$PROCESS_$SYSTEMATIC");
@@ -315,13 +318,13 @@ int main(int argc, char** argv) {
   //}
 
 
-  //auto rebin = ch::AutoRebin()
-  //  .SetBinThreshold(0.)
-  //  // .SetBinUncertFraction(0.5)
-  //  .SetRebinMode(1)
-  //  .SetPerformRebin(true)
-  //  .SetVerbosity(1);
-  //if(auto_rebin) rebin.Rebin(cb, cb);
+  auto rebin = ch::AutoRebin()
+    .SetBinThreshold(0.0)
+    .SetBinUncertFraction(0.3)
+    .SetRebinMode(1)
+    .SetPerformRebin(true)
+    .SetVerbosity(1);
+  if(auto_rebin) rebin.Rebin(cb, cb);
 
   //if(manual_rebin) {
   //  for(auto b : bins) {
@@ -419,15 +422,17 @@ int main(int argc, char** argv) {
   //});
 
 //doing bin by bin error 
-  cout << "Generating bbb uncertainties...";
-  auto bbb = ch::BinByBinFactory()
-    .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
-    .SetAddThreshold(0.05)
-    .SetMergeThreshold(0.4)
-    .SetFixNorm(true)
-    // .SetMergeZeroBins(false)
-    .SetPoissonErrors(poisson_bbb);
-  bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+  //cout << "Generating bbb uncertainties...";
+  //auto bbb = ch::BinByBinFactory()
+  //  .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
+  //  .SetAddThreshold(0.1)
+  //  .SetMergeThreshold(0.4)
+  //  .SetFixNorm(true)
+  //  // .SetMergeZeroBins(false)
+  //  .SetPoissonErrors(poisson_bbb);
+  //bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+
+
   //for (auto chn : chns) {
   //  std::cout << " - Doing bbb for channel " << chn << "\n";
   //  bbb.MergeAndAdd(cb.cp().channel({chn}).process({"TTbar","SingleTop","data_untagged","TTbar_untagged","SingleTop_untagged", "ttV","VV","Drell_Yan"}).FilterAll([](ch::Object const* obj) {
@@ -445,6 +450,8 @@ int main(int argc, char** argv) {
   //// Will merge but only for non W and QCD processes, to be on the safe side
   //bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
   //bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);
+  //ch::CombineHarvester::SetAutoMCStats(cb, 10, 0, 0)
+  cb.AddDatacardLineAtEnd("* autoMCStats 10 0 1");
   cout << " done\n";
 
   //Switch JES over to lnN:

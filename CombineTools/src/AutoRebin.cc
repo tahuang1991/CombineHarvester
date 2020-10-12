@@ -23,22 +23,46 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
   for (auto bin : bins) {
     //Build histogram containing total of all backgrounds, avoid using
     //GetShapeWithUncertainty so that possible negative bins are retained
+    std::cout << "bin = " << bin << std::endl;
+    std::list<TH1F> mylist;
+
+
     TH1F data_obs = src.cp().bin({bin}).GetObservedShape();
     TH1F total_bkg;
     if (data_obs.GetXaxis()->GetXbins()->GetArray()){
+      std::cout << "Array type" << std::endl;
       total_bkg = TH1F("","",data_obs.GetNbinsX(), 
                   data_obs.GetXaxis()->GetXbins()->GetArray()) ;
     } else {
+      std::cout << "Not array type" << std::endl;
       total_bkg = TH1F("","",data_obs.GetNbinsX(),
                   data_obs.GetXaxis()->GetBinLowEdge(1),data_obs.GetXaxis()->GetBinLowEdge(data_obs.GetNbinsX()+1));
     }
+    
     src.cp().bin({bin}).backgrounds().ForEachProc([&](ch::Process *proc) {
+        TH1F tmp_bkg;
+        tmp_bkg = TH1F((proc->ClonedScaledShape()).get()->GetName(),(proc->ClonedScaledShape()).get()->GetName(),data_obs.GetNbinsX(),
+                  data_obs.GetXaxis()->GetBinLowEdge(1),data_obs.GetXaxis()->GetBinLowEdge(data_obs.GetNbinsX()+1));
+        tmp_bkg.Add((proc->ClonedScaledShape()).get());
+        mylist.push_back (tmp_bkg);
+
         total_bkg.Add((proc->ClonedScaledShape()).get());
+        //Add the 0 or negative checker for individual backgrounds HERE!!!
+        std::cout << "proc = " << (proc->ClonedScaledShape()).get()->GetName() << std::endl;
+        std::cout << "Lowest entries of bkg are " << (proc->ClonedScaledShape()).get()->GetBinContent(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
+        std::cout << "Lowest entries error are " << (proc->ClonedScaledShape()).get()->GetBinError(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
+
     });
+    std::cout << "Mylist is " << mylist.size() << " long with names " << std::endl;
+    for (auto i : mylist){
+      //std::cout << i << std::endl;
+      std::cout << i.GetName() << std::endl;
+    }
       
     //Create a vector to store the original and new binning
     int nbins = total_bkg.GetNbinsX();
     std::vector<double> init_bins; 
+
     for(int i=1; i<=nbins+1; ++i) init_bins.push_back(total_bkg.GetBinLowEdge(i));
     std::cout << "[AutoRebin] Searching for bins failing conditions "
     "for analysis bin id " << bin << std::endl; 
@@ -46,7 +70,7 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
         
     //Call to function to fill new_bins vector with the recommended binning
     AutoRebin::FindNewBinning(total_bkg, new_bins, bin_threshold_, 
-                bin_uncert_fraction_, rebin_mode_);
+                bin_uncert_fraction_, rebin_mode_, mylist);
         
     //Inform user if binning has been modified 
     if(new_bins.size() != init_bins.size()) { 
@@ -102,7 +126,7 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
 
 
 void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins, 
-                double bin_condition, double bin_uncert_fraction, int mode) {
+                double bin_condition, double bin_uncert_fraction, int mode, std::list<TH1F> mylist) {
 
   bool all_bins = true;
   //Find the maximum bin
@@ -304,6 +328,40 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
   total_bkg_new = (TH1F*)total_bkg.Rebin(new_bins.size()-1, "total_bkg_new",
     &new_bins[0]); 
     
+
+  std::list<TH1F> mylist_new;
+
+  for (auto i : mylist){
+    TH1F tmp_bkg;
+    //tmp_bkg = ((TH1F*)i.Rebin(new_bins.size()-1, i.GetName(), &new_bins[0]))->Clone();
+
+    tmp_bkg = TH1F(i.GetName(),i.GetName(),total_bkg_new->GetNbinsX(),
+              total_bkg_new->GetXaxis()->GetBinLowEdge(1),total_bkg_new->GetXaxis()->GetBinLowEdge(total_bkg_new->GetNbinsX()+1));
+    tmp_bkg.Add(i.Rebin(new_bins.size()-1, i.GetName(), &new_bins[0]));
+
+    mylist_new.push_back (tmp_bkg);
+    std::cout << "mem leak here?" << std::endl;
+  }
+
+
+  for (auto i : mylist_new){
+    std::cout << "proc = " << i.GetName() << std::endl;
+    //std::cout << "Lowest bin number is " << i.GetMinimumBin() << std::endl;
+    //std::cout << "Lowest entries of bkg are " << i.GetBinContent((i.GetMinimumBin())) << std::endl;
+    //std::cout << "Lowest entries error are " << i.GetBinError((i.GetMinimumBin())) << std::endl;
+
+    int counter = 0;
+    for (int j = 0; j <= i.GetNbinsX(); j++){
+      //std::cout << i.GetBinContent(j) << std::endl;
+      float content = i.GetBinContent(j);
+      if (content <= 0.0){
+        counter++;
+      }
+    }
+    std::cout << "Total bins: " << i.GetNbinsX() << " with " << counter << " <= 0" << std::endl;
+  }
+
+
   //Flag checks if all bins now satify the condition after pass through
   int nbins_new = total_bkg_new->GetNbinsX();
   if(nbins_new!=nbins) {
@@ -312,9 +370,11 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
         << std::endl;
     for(int i=1; i<=nbins_new+1; ++i) {
       if(v_>0)  std::cout << "Bin index: " << i << ", BinLowEdge: " << 
-            total_bkg_new->GetBinLowEdge(i) <<  ", Bin content: " << 
-            total_bkg_new->GetBinContent(i) << ", Bin error fraction: " <<
-            total_bkg_new->GetBinError(i)/total_bkg_new->GetBinContent(i) 
+            total_bkg_new->GetBinLowEdge(i) <<  ", Bin content: " <<
+            total_bkg_new->GetBinContent(i) << ", Bin error: " << 
+            total_bkg_new->GetBinError(i) << ", Bin error fraction: " <<
+            total_bkg_new->GetBinError(i)/total_bkg_new->GetBinContent(i) <<
+            ", scale factor: " << total_bkg_new->GetBinContent(i)/pow(total_bkg_new->GetBinError(i),2)
             << std::endl;
        //Last bin is allowed to be failing condition, just there to enclose the
        //penultimate bin
@@ -328,7 +388,7 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
   if(all_bins) return;
   //Run function again if all_bins is not true, i.e. if it's possible that not
   //all bins pass condition after one pass 
-  else FindNewBinning(*total_bkg_new, new_bins, bin_condition, bin_uncert_fraction, mode);
+  else FindNewBinning(*total_bkg_new, new_bins, bin_condition, bin_uncert_fraction, mode, mylist_new);
 
 }
 
