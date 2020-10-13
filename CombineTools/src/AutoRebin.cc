@@ -48,9 +48,9 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
 
         total_bkg.Add((proc->ClonedScaledShape()).get());
         //Add the 0 or negative checker for individual backgrounds HERE!!!
-        std::cout << "proc = " << (proc->ClonedScaledShape()).get()->GetName() << std::endl;
-        std::cout << "Lowest entries of bkg are " << (proc->ClonedScaledShape()).get()->GetBinContent(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
-        std::cout << "Lowest entries error are " << (proc->ClonedScaledShape()).get()->GetBinError(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
+        //std::cout << "proc = " << (proc->ClonedScaledShape()).get()->GetName() << std::endl;
+        //std::cout << "Lowest entries of bkg are " << (proc->ClonedScaledShape()).get()->GetBinContent(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
+        //std::cout << "Lowest entries error are " << (proc->ClonedScaledShape()).get()->GetBinError(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
 
     });
     std::cout << "Mylist is " << mylist.size() << " long with names " << std::endl;
@@ -330,6 +330,7 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
     
 
   std::list<TH1F> mylist_new;
+  mylist_new.clear();
 
   for (auto i : mylist){
     TH1F tmp_bkg;
@@ -343,18 +344,30 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
     std::cout << "mem leak here?" << std::endl;
   }
 
+  for (auto p : new_bins) std::cout << " " << p;
+  std::cout << std::endl;
 
   for (auto i : mylist_new){
-    std::cout << "proc = " << i.GetName() << std::endl;
+    //auto ttname = "TTbar";
+
+    std::string histname (i.GetName());
+    std::cout << "proc = " << i.GetName() << " " << histname << std::endl;
+    //std::cout << histname.find("TTbar") << std::endl;
+    if (not ((histname.find("TTbar") == 0) and histname.find("TTbar_untagged") != 0)) continue;
+
+
+    //if (not(i.GetName() == ttname)) continue;
+    //if (not(i.GetName().find("TTbar") and not i.GetName().find("TTbar_untagged"))) continue;
     //std::cout << "Lowest bin number is " << i.GetMinimumBin() << std::endl;
     //std::cout << "Lowest entries of bkg are " << i.GetBinContent((i.GetMinimumBin())) << std::endl;
     //std::cout << "Lowest entries error are " << i.GetBinError((i.GetMinimumBin())) << std::endl;
 
     int counter = 0;
-    for (int j = 0; j <= i.GetNbinsX(); j++){
+    for (int j = 1; j <= i.GetNbinsX(); j++){
       //std::cout << i.GetBinContent(j) << std::endl;
       float content = i.GetBinContent(j);
       if (content <= 0.0){
+        std::cout << "Bin " << j << " has content " << i.GetBinContent(j) << std::endl;
         counter++;
       }
     }
