@@ -333,11 +333,10 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
   mylist_new.clear();
 
   for (auto i : mylist){
-    TH1F tmp_bkg;
-    //tmp_bkg = ((TH1F*)i.Rebin(new_bins.size()-1, i.GetName(), &new_bins[0]))->Clone();
 
-    tmp_bkg = TH1F(i.GetName(),i.GetName(),total_bkg_new->GetNbinsX(),
-              total_bkg_new->GetXaxis()->GetBinLowEdge(1),total_bkg_new->GetXaxis()->GetBinLowEdge(total_bkg_new->GetNbinsX()+1));
+    TH1F tmp_bkg = TH1F(i.GetName(),i.GetName(), new_bins.size()-1, &new_bins[0]);
+    //tmp_bkg = TH1F(i.GetName(),i.GetName(),total_bkg_new->GetNbinsX(),
+    //          total_bkg_new->GetXaxis()->GetBinLowEdge(1),total_bkg_new->GetXaxis()->GetBinLowEdge(total_bkg_new->GetNbinsX()+1));
     tmp_bkg.Add(i.Rebin(new_bins.size()-1, i.GetName(), &new_bins[0]));
 
     mylist_new.push_back (tmp_bkg);
