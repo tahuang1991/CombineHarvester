@@ -46,7 +46,13 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
         tmp_bkg.Add((proc->ClonedScaledShape()).get());
         mylist.push_back (tmp_bkg);
 
-        total_bkg.Add((proc->ClonedScaledShape()).get());
+        std::unique_ptr<TH1> total_tmp((proc->ClonedScaledShape()));
+        std::cout << "tmp bins is " << total_tmp->GetNbinsX() << std::endl;
+        for (int j = 1; j < total_tmp->GetNbinsX(); j++){
+          if (total_tmp->GetBinContent(j) == 0) total_tmp->SetBinError(j, 0);
+        }
+        total_bkg.Add(total_tmp.get());
+        //total_bkg.Add((proc->ClonedScaledShape()).get());
         //Add the 0 or negative checker for individual backgrounds HERE!!!
         //std::cout << "proc = " << (proc->ClonedScaledShape()).get()->GetName() << std::endl;
         //std::cout << "Lowest entries of bkg are " << (proc->ClonedScaledShape()).get()->GetBinContent(((proc->ClonedScaledShape()).get()->GetMinimumBin())) << std::endl;
@@ -54,11 +60,22 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
 
     });
     std::cout << "Mylist is " << mylist.size() << " long with names " << std::endl;
+    
     for (auto i : mylist){
-      //std::cout << i << std::endl;
-      std::cout << i.GetName() << std::endl;
+      std::string histname (i.GetName());
+      std::cout << "proc = " << histname << std::endl;
+      int counter = 0;
+      int neg_counter = 0;
+      for (int j = 1; j <= i.GetNbinsX(); j++){
+        float content = i.GetBinContent(j);
+        if (content == 0.0) counter++;
+        if (content < 0.0) neg_counter++;
+      }
+      std::cout << "Total bins: " << i.GetNbinsX() << " with " << counter << " = 0 and " << neg_counter << " < 0" << std::endl;
     }
-      
+
+
+  
     //Create a vector to store the original and new binning
     int nbins = total_bkg.GetNbinsX();
     std::vector<double> init_bins; 
@@ -340,7 +357,6 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
     tmp_bkg.Add(i.Rebin(new_bins.size()-1, i.GetName(), &new_bins[0]));
 
     mylist_new.push_back (tmp_bkg);
-    std::cout << "mem leak here?" << std::endl;
   }
 
   for (auto p : new_bins) std::cout << " " << p;
@@ -350,9 +366,9 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
     //auto ttname = "TTbar";
 
     std::string histname (i.GetName());
-    std::cout << "proc = " << i.GetName() << " " << histname << std::endl;
+    std::cout << "proc = " << histname << std::endl;
     //std::cout << histname.find("TTbar") << std::endl;
-    if (not ((histname.find("TTbar") == 0) and histname.find("TTbar_untagged") != 0)) continue;
+    //if (not ((histname.find("TTbar") == 0) and histname.find("TTbar_untagged") != 0)) continue;
 
 
     //if (not(i.GetName() == ttname)) continue;
@@ -362,15 +378,14 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
     //std::cout << "Lowest entries error are " << i.GetBinError((i.GetMinimumBin())) << std::endl;
 
     int counter = 0;
+    int neg_counter = 0;
     for (int j = 1; j <= i.GetNbinsX(); j++){
       //std::cout << i.GetBinContent(j) << std::endl;
       float content = i.GetBinContent(j);
-      if (content <= 0.0){
-        std::cout << "Bin " << j << " has content " << i.GetBinContent(j) << std::endl;
-        counter++;
-      }
+      if (content == 0.0) counter++;
+      if (content < 0.0) neg_counter++;
     }
-    std::cout << "Total bins: " << i.GetNbinsX() << " with " << counter << " <= 0" << std::endl;
+    std::cout << "Total bins: " << i.GetNbinsX() << " with " << counter << " = 0 and " << neg_counter << " < 0" << std::endl;
   }
 
 
@@ -396,6 +411,25 @@ void AutoRebin::FindNewBinning(TH1F &total_bkg, std::vector<double> &new_bins,
            && i!=nbins_new+1) all_bins=false;
     }
   } 
+
+
+
+
+  auto bin_condition_bkg = bin_condition;
+  auto bin_uncert_fraction_bkg = bin_uncert_fraction;
+  //Rebin by each background time!!!
+  if(all_bins){
+    for (auto i : mylist_new){
+      std::cout << "Process " << i.GetName() << std::endl;
+      for (int j = 1; j <= i.GetNbinsX(); j++){
+        if (i.GetBinContent(j) <= bin_condition_bkg || i.GetBinError(j)/i.GetBinContent(j) >= bin_uncert_fraction_bkg){
+          std::cout << "Bin " << j << " needs new rebin!  Content = " << i.GetBinContent(j) << " and frac = " << i.GetBinError(j)/i.GetBinContent(j) << std::endl;
+        }
+      }
+    }
+  }
+  //Rebin by each background is donezo
+
      
   if(all_bins) return;
   //Run function again if all_bins is not true, i.e. if it's possible that not
