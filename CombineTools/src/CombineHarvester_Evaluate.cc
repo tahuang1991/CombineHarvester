@@ -611,9 +611,10 @@ void CombineHarvester::VariableRebin(std::vector<double> bins) {
       // shape norm should only be "no_norm_rate"
       prev_proc_rates[i] = procs_[i]->no_norm_rate();
 
-      for (int j = 0; j <= copy->GetNbinsX(); j++){
+      for (int j = 1; j <= copy->GetNbinsX(); j++){
 	  if (copy->GetBinContent(j) == 0.0){
 	      if (!findzerobin){
+		  std::cout <<"Find zerobin for "<< "CH " << procs_[i]->channel() <<" "<< procs_[i]->process() <<" err "<< copy->GetBinError(j) << std::endl;
 		  findzerobin = true;
 		  thisbinerr_zero = copy->GetBinError(j);
 	      }
@@ -623,14 +624,14 @@ void CombineHarvester::VariableRebin(std::vector<double> bins) {
       std::unique_ptr<TH1> copy2(copy->Rebin(bins.size()-1, "", &(bins[0])));
 
       //set bin error for empty bins
-      for (int j = 0; j <= copy2->GetNbinsX(); j++)
+      for (int j = 1; j <= copy2->GetNbinsX(); j++)
 	  if (copy2->GetBinContent(j) == 0.0) copy2->SetBinError(j, thisbinerr_zero);
 
       // The process shape & rate will be reset here
       procs_[i]->set_shape(std::move(copy2), true);
       scaled_procs[i] = procs_[i]->ClonedScaledShape();
     }
-    zerobin_err.push_back(thisbinerr_zero);
+    zerobin_err[i] = thisbinerr_zero;
   }
 
   for (unsigned i = 0; i < procs_.size(); ++i) {
