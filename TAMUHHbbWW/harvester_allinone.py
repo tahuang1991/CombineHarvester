@@ -4,6 +4,7 @@ import sys
 import Datacards
 
 masslist = 	[260, 270, 300, 350, 400, 450, 500, 550, 600, 650, 750, 800, 900]
+#masslist = 	[260]
 channellist =	["ElEl", "MuEl", "MuMu"]
 trainlist =	["MTonly", "MTandMT2", "MTandMT2_MJJ"]
 trainlist =     ["MTandMT2_MJJ"]
@@ -12,8 +13,9 @@ statslist =     ["CMS_eff_b_heavy","CMS_eff_b_light","CMS_pu", "CMS_pdf", "CMS_e
 
 
 create_shapes = False
-create_datacards = True
-auto_rebin = True
+create_datacards = False
+auto_rebin = False #Requires create_datacards to be on
+plot_sig_bkg = True
 create_limits_scripts = False
 create_impacts_scripts = False
 raw_files_dir = '/afs/cern.ch/user/t/tahuang/public/HHbbWW/'
@@ -22,103 +24,17 @@ my_raw_files_dir = '/eos/user/d/daebi/20200331_oldNanoAOD/'
 
 directory_dict =	[
 	{
-		"raw_input"		:	raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15/",
-                "raw_file_nnstep"       :       "0p05",
-		"shapes_output"		:	pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p05/",
-		"datacard_output"	:	"2D_MjjCR_0p05_autoRebinTrue"
+		"raw_input"		:	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+                "raw_file_nnstep"       :       "0p1",
+		"shapes_output"		:	pwd+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_nnstep0p1/",
+		"datacard_output"	:	"2D_MjjCR_0p1_autoRebinTrue_th0_fra0p3_emptybins_errorfix_1020"
 	},
         {
                 "raw_input"             :	raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15/",
                 "raw_file_nnstep"       :       "0p1",
                 "shapes_output"         :	pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p1/",
                 "datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fraction0p3_test",
-        },
-        {
-                "raw_input"             :	raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjcutSonly_HMEbinsv4_1p15/",
-                "raw_file_nnstep"       :       "0p05",
-                "shapes_output"         :	pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjcutSonly_HMEbinsv4_1p15_nnstep0p05/",
-                "datacard_output"       :	"2D_MjjcutSonly_0p05"
-        },
-        {
-                "raw_input"             :	raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjcutSonly_HMEbinsv4_1p15/",
-		"raw_file_nnstep"	:	"0p1",
-                "shapes_output"         :	pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjcutSonly_HMEbinsv4_1p15_nnstep0p05/",
-                "datacard_output"       :	"2D_MjjcutSonly_0p1"
-        },
-        {
-                "raw_input"             :       raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjMerged_HMEbinsv4_1p15/",
-                "raw_file_nnstep"       :       "0p05",
-                "shapes_output"         :       pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjMerged_HMEbinsv4_1p15_nnstep0p05/",
-                "datacard_output"       :       "2D_MjjMerged_0p05"
-        },
-        {
-                "raw_input"             :       raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjMerged_HMEbinsv4_1p15/",
-                "raw_file_nnstep"       :       "0p1",
-                "shapes_output"         :       pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjMerged_HMEbinsv4_1p15_nnstep0p1/",
-                "datacard_output"       :       "2D_MjjMerged_0p1",
-        },
-
-
-
-
-
-	{
-        	"raw_input"             :	'/afs/cern.ch/user/t/tahuang/public/HHbbWW/HHbbWW_20200821_HME_HMEbinsv4_1p15/',
-        	"raw_file_nnstep"       :	"0p0",
-        	"shapes_output"         :	pwd+"HHbbWW_20200821_HME_HMEbinsv4_1p15_nncut0p0/",
-        	"datacard_output"       :	"1D_HMEonly_0p0cut"
-        },
-
-        {
-                "raw_input"             :       '/afs/cern.ch/user/t/tahuang/public/HHbbWW/HHbbWW_20200821_HME_HMEbinsv4_1p15/',
-                "raw_file_nnstep"       :       "0p8",
-                "shapes_output"         :       pwd+"HHbbWW_20200821_HME_HMEbinsv4_1p15_nncut0p8/",
-                "datacard_output"       :       "1D_HMEonly_0p8cut"
-        },
-
-        {
-                "raw_input"             :       '/afs/cern.ch/user/t/tahuang/public/HHbbWW/HHbbWW_20200821_HME_HMEbinsv4_1p15/',
-                "raw_file_nnstep"       :       "0p95",
-                "shapes_output"         :       pwd+"HHbbWW_20200821_HME_HMEbinsv4_1p15_nncut0p95/",
-                "datacard_output"       :       "1D_HMEonly_0p95cut"
-        },
-
-	{
-		"raw_input"		:	raw_files_dir+'HHbbWW_20200812_NNoutput_MjjCR_NNcutstudy1D_MCstat/',
-		"raw_file_nnstep"	:	'0p04',
-		"shapes_output"		:	pwd+"HHbbWW_20200812_NNoutput_MjjCR_NNcutstudy1D_MCstat_speedtester/",
-		"datacard_output"	:	"autoMC_test_yesRebin"
-	},
-
-        {
-                "raw_input"             :       my_raw_files_dir+'HHbbWW_1D_MTMT2MJJ_30/',
-                "raw_file_nnstep"       :       '0p1',
-                "shapes_output"         :       pwd+"new_10_01_binsize30_shapes/",
-                "datacard_output"       :       "new_10_01_binsize30"
-        },
-
-        {
-                "raw_input"             :       my_raw_files_dir+'HHbbWW_1D_MTMT2MJJ_60/',
-                "raw_file_nnstep"       :       '0p05',
-                "shapes_output"         :       pwd+"new_10_01_binsize60_shapes/",
-                "datacard_output"       :       "new_10_01_binsize60"
-        },
-
-        {
-                "raw_input"             :       my_raw_files_dir+'HHbbWW_1D_MTMT2MJJ_90/',
-                "raw_file_nnstep"       :       '0p033',
-                "shapes_output"         :       pwd+"new_10_01_binsize90_shapes/",
-                "datacard_output"       :       "new_10_01_binsize90"
-        },
-
-        {
-                "raw_input"             :       my_raw_files_dir+'HHbbWW_1D_MTMT2MJJ_120/',
-                "raw_file_nnstep"       :       '0p025',
-                "shapes_output"         :       pwd+"new_10_01_binsize120_shapes/",
-                "datacard_output"       :       "new_10_01_binsize120"
         }
-
-
 
 
 
@@ -131,7 +47,7 @@ directory_dict =	[
         #}
 			]
 
-directory = directory_dict[1]
+directory = directory_dict[0]
 
 out_prefix = "har_test"  ##Outfile names are {prefix}_{channel}_M{mass}_shapes.root
 
@@ -157,7 +73,8 @@ if create_shapes:
     for mass in masslist:
       processnames = ["TT","sT","DY","data_untagged","TT_untagged","sT_untagged","ttV","VV", "RadionM{}".format(mass)]
       ################ Might need to change format of infile_name
-      infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NNvsHME_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
+      #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NNvsHME_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
+      infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NNvsHME_nnout_{tr}_nnstep{nnstep}_nncut0p0_HME1p15_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
       #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NN_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
       #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_HME_nnout_{tr}cut{nncut}_SignalM{m}.root".format(tr = train, nncut = directory["raw_file_nnstep"], m = mass)
       #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NN_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
@@ -219,6 +136,95 @@ if create_datacards:
       outputdir = directory["datacard_output"]
       print "Running M", m, " tr ", tr, " from ", inputdir, " to ", outputdir
       os.system("HHbblvlv --input_folder={inputdir} --output_folder={outputdir} --mass={mass} --training={train} --file_prefix={prefix} --auto_rebin={auto_rebin}".format(inputdir = inputdir, mass = m, train = tr, outputdir = outputdir, prefix = out_prefix, auto_rebin = auto_rebin))
+
+
+
+
+
+if plot_sig_bkg:
+  print "Begin plotting background/signal"
+  for tr in trainlist:
+    print "Training ", tr
+    for mass in masslist:
+      print "Mass ", mass
+      signal = "RadionM{m}".format(m = mass)
+
+      bgtypes = ["TT", "sT", "VV", "ttV"]
+      bgtypes = ["TTbar", "SingleTop", "ttV", "VV"]
+
+      untagged = ["data_unntagged", "TT_untagged", "sT_untagged"]
+
+      branchlist = ["_MC_statistical_", "_CMS_pu_", "_CMS_eff_b_light", "_CMS_eff_trigger_", "_CMS_pdf_", "_CMS_eff_e", "_CMS_iso_mu_", "_CMS_eff_mu_", "_QCDscale_", "_CMS_eff_b_heavy_"]
+
+      channellist = ["MuMu", "MuEl", "ElEl"]
+
+      colorlist = [800-4, 820-3, 900-3, 860-3, 616-7, 432+2, 400+2]
+
+      for channel in channellist:
+        filedir = "shapes/"+directory["datacard_output"]+"/"+tr+"/{m}/".format(m = mass)
+        print channel
+        filename = filedir+'GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV_input.root'.format(tr = tr, m = mass, ch = channel)
+        F = ROOT.TFile.Open(filename)
+        f = F.Get("GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV".format(tr = tr, m = mass, ch = channel))
+
+        legend = ROOT.TLegend(0.78,0.66,0.88,0.69+len(bgtypes)*.04)
+        legend.SetTextSize(0.045)
+        legend.SetTextFont(42)
+        legend.SetBorderSize(0)
+
+        stack = ROOT.THStack("bgs", "")
+        for i in range(len(bgtypes)):
+          print bgtypes[i]
+          h = f.Get(bgtypes[i])
+          h.SetFillColor(colorlist[i])
+          h.SetLineColor(colorlist[i])
+          stack.Add(h)
+          legend.AddEntry(h, bgtypes[i], "f")
+
+
+        if channel != "MuEl":
+          h = f.Get("data_untagged") - f.Get("TTbar_untagged") - f.Get("SingleTop_untagged")
+          h.SetFillColor(colorlist[4])
+          h.SetLineColor(colorlist[4])
+          stack.Add(h)
+          legend.AddEntry(h, "DY", "f")
+        else:
+          h = f.Get("Drell_Yan")
+          h.SetFillColor(colorlist[4])
+          h.SetLineColor(colorlist[4])
+          stack.Add(h)
+          legend.AddEntry(h, "DY", "f")
+
+
+        h_data = f.Get("Signal{m}".format(m = mass))
+        h_data.SetMarkerStyle(20)
+        h_data.SetMarkerColor(1)
+        h_data.SetLineColor(1)
+        legend.AddEntry(h_data, "Signal", "p")
+
+
+        ROOT.gStyle.SetPadLeftMargin(0.13)
+        c1 = ROOT.TCanvas("c", "c", 1600, 600)
+        c1.Clear()
+        pad1 = ROOT.TPad("pad1", "pad1", 0, 0, 1, 1.0)
+        #pad1.SetBottomMargin(.02)
+        pad1.Draw()
+        pad1.cd()
+        stack.Draw("hist")
+        stack.SetTitle(tr+" "+channel+" M{m}".format(m = mass))
+        stack.GetXaxis().SetTitle("Linearized DNN output")
+        stack.GetYaxis().SetTitle("Entries")
+        h_data.Draw("epsame")
+        pad1.SetLogy()
+        legend.Draw("same")
+        os.system("mkdir -p {filedir}plots/".format(filedir = filedir))
+        c1.SaveAs(filedir+"plots/{ch}.pdf".format(ch = channel))
+        print "Saved to ", filedir, "plots/", channel, ".pdf"
+
+
+
+
+
 
 
 

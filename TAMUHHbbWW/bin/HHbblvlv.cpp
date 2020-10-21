@@ -488,6 +488,8 @@ int main(int argc, char** argv) {
     //writer.WriteCards("GGToX0ToHHTo2B2L2Nu_"+chn, cb.cp().channel({chn}));
   //}
 
-  cb.PrintAll();
+
+  // Prints a lot of stuff
+  //cb.PrintAll();
   cout << " done\n";
 }

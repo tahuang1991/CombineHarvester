@@ -47,7 +47,6 @@ void AutoRebin::Rebin(CombineHarvester &src, CombineHarvester &dest) {
         mylist.push_back (tmp_bkg);
 
         std::unique_ptr<TH1> total_tmp((proc->ClonedScaledShape()));
-        std::cout << "tmp bins is " << total_tmp->GetNbinsX() << std::endl;
         for (int j = 1; j < total_tmp->GetNbinsX(); j++){
           if (total_tmp->GetBinContent(j) == 0) total_tmp->SetBinError(j, 0);
         }
