@@ -602,6 +602,16 @@ void CombineHarvester::VariableRebin(std::vector<double> bins) {
   // are needed to update the associated Systematic entries
   std::vector<std::unique_ptr<TH1>> scaled_procs(procs_.size());
 
+  std::unique_ptr<TH1> th1oldbin(procs_[0]->ClonedScaledShape());
+  std::cout <<"====  Old bins : " << std::endl;
+  for (int i = 1; i <= th1oldbin->GetNbinsX(); ++i) std::cout << th1oldbin->GetBinLowEdge(i) << " ";
+  std::cout << std::endl;
+
+
+  std::cout <<"====  New bins : " << std::endl;
+  for (unsigned i = 0; i < bins.size(); ++i) std::cout << bins[i] << " ";
+  std::cout << std::endl;
+
   for (unsigned i = 0; i < procs_.size(); ++i) {
     bool findzerobin = false;
     double thisbinerr_zero = 0.0;
@@ -610,6 +620,7 @@ void CombineHarvester::VariableRebin(std::vector<double> bins) {
       std::unique_ptr<TH1> copy(procs_[i]->ClonedScaledShape());
       // shape norm should only be "no_norm_rate"
       prev_proc_rates[i] = procs_[i]->no_norm_rate();
+
 
       for (int j = 1; j <= copy->GetNbinsX(); j++){
 	  if (copy->GetBinContent(j) == 0.0){
@@ -620,12 +631,18 @@ void CombineHarvester::VariableRebin(std::vector<double> bins) {
 	      }
 	      copy->SetBinError(j,0.0);
 	  }
+	  if (abs(copy->GetBinContent(j)) > 0 and copy->GetBinError(j)/abs(copy->GetBinContent(j))>0.8)
+	    std::cout <<"before AutoRebin CH " << procs_[i]->channel() <<" "<< procs_[i]->process() <<" bin "<< j <<" content "<< copy->GetBinContent(j) <<" err "<< copy->GetBinError(j) << std::endl;
       }
+      //copy->Sumw2();
       std::unique_ptr<TH1> copy2(copy->Rebin(bins.size()-1, "", &(bins[0])));
 
       //set bin error for empty bins
-      for (int j = 1; j <= copy2->GetNbinsX(); j++)
+      for (int j = 1; j <= copy2->GetNbinsX(); j++){
 	  if (copy2->GetBinContent(j) == 0.0) copy2->SetBinError(j, thisbinerr_zero);
+	  if (abs(copy2->GetBinContent(j)) > 0 and copy2->GetBinError(j)/abs(copy2->GetBinContent(j))>0.8)
+	    std::cout <<"CH " << procs_[i]->channel() <<" "<< procs_[i]->process() <<" bin "<< j <<" content "<< copy2->GetBinContent(j) <<" err "<< copy2->GetBinError(j) << std::endl;
+      }
 
       // The process shape & rate will be reset here
       procs_[i]->set_shape(std::move(copy2), true);

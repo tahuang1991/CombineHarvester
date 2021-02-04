@@ -3,8 +3,11 @@ import os
 import sys
 import Datacards
 
+sys.argv.append( '-b' )
+sys.argv.append( '-q' )
+
 masslist = 	[260, 270, 300, 350, 400, 450, 500, 550, 600, 650, 750, 800, 900]
-#masslist = 	[260]
+#masslist = [900]
 channellist =	["ElEl", "MuEl", "MuMu"]
 trainlist =	["MTonly", "MTandMT2", "MTandMT2_MJJ"]
 trainlist =     ["MTandMT2_MJJ"]
@@ -13,27 +16,59 @@ statslist =     ["CMS_eff_b_heavy","CMS_eff_b_light","CMS_pu", "CMS_pdf", "CMS_e
 
 
 create_shapes = False
-create_datacards = False
-auto_rebin = False #Requires create_datacards to be on
-plot_sig_bkg = True
-create_limits_scripts = False
-create_impacts_scripts = False
-raw_files_dir = '/afs/cern.ch/user/t/tahuang/public/HHbbWW/'
-pwd = '/afs/cern.ch/work/d/daebi/diHiggs/CMSSW_8_1_0/src/CombineHarvester/TAMUHHbbWW/shapes/'
-my_raw_files_dir = '/eos/user/d/daebi/20200331_oldNanoAOD/'
+create_datacards = True
+auto_rebin = True
+bin_thresh = 0.0
+bin_errfrac = -1.0
+plot_sig_bkg = False
+create_limits_scripts = True
+create_impacts_scripts = True
+#raw_files_dir = '/afs/cern.ch/user/t/tahuang/public/HHbbWW/'
+raw_files_dir = '/afs/cern.ch/work/t/tahuang/HHAnalysis/20200331_oldNanoAOD/'
+#pwd = '/afs/cern.ch/work/d/daebi/diHiggs/CMSSW_8_1_0/src/CombineHarvester/TAMUHHbbWW/shapes/'
+#my_raw_files_dir = '/eos/user/d/daebi/20200331_oldNanoAOD/'
+my_raw_files_dir = '/afs/cern.ch/work/t/tahuang/CombinedLimit/ForGithub/CMSSW_8_1_0/src/HiggsAnalysis/CombinedLimit/HH_WWbb/'
+pwd ='/afs/cern.ch/work/t/tahuang/CombinedLimit/ForGithub/CMSSW_8_1_0/src/CombineHarvester/TAMUHHbbWW/shapes/'
 
 directory_dict =	[
-	{
-		"raw_input"		:	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
-                "raw_file_nnstep"       :       "0p1",
-		"shapes_output"		:	pwd+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_nnstep0p1/",
-		"datacard_output"	:	"2D_MjjCR_0p1_autoRebinTrue_th0_fra0p3_emptybins_errorfix_1020"
-	},
+        ### 1D 
         {
-                "raw_input"             :	raw_files_dir+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201025_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+	        "dimension"             : 1,
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201113_NN_1D_MjjCR/",
+                "raw_input"             :	raw_files_dir+"HHbbWW_20201113_NN_1D_MjjCR_medianConservative/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20180802_NNoutputVsHME_MjjCR_M400_test/",
+                "raw_file_nnstep"       :       "0p04",
+                #"shapes_output"         :	pwd+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p1/",
+                "shapes_output"         :	pwd+"HHbbWW_20201113_NN_1D_MjjCR_nnstep0p04/",
+                "datacard_output"       :	"1D_MjjCR_0p04_autoRebinFalse_20201113_medianConservative",
+                #"datacard_output"       :	"1D_MjjCR_0p04_autoRebinTrue_th0_frac1p0_20201113",
+        },
+
+	#{
+	#	"raw_input"		:	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+        #        "raw_file_nnstep"       :       "0p1",
+	#	"shapes_output"		:	pwd+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_nnstep0p1/",
+	#	"datacard_output"	:	"2D_MjjCR_0p1_autoRebinTrue_th0_fra0p3_emptybins_errorfix_1020"
+	#},
+	### 2D
+        {
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201025_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+	        "dimension"             : 2,
+                "raw_input"             :	raw_files_dir+"HHbbWW_20201113_NNvsHME_linearized1D_MjjCR_HMEbinsv4/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20201113_NNvsHME_linearized1D_MjjCR_HMEbinsv4_medianConservative/",
+                #"raw_input"             :	raw_files_dir+"HHbbWW_20180802_NNoutputVsHME_MjjCR_M400_test/",
                 "raw_file_nnstep"       :       "0p1",
-                "shapes_output"         :	pwd+"HHbbWW_20200814_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p1/",
-                "datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fraction0p3_test",
+                "shapes_output"         :	pwd+"HHbbWW_20201006_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p1/",
+                #"shapes_output"         :	pwd+"HHbbWW_20201113_NNvsHME_linearized1D_MjjCR_HMEbinsv4_1p15_nnstep0p1_medianConservative/",
+                #"datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fraction1p0_20201113",
+                #"datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fractionInf_20201113_medianConservative",
+                #"datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fractionInf_20201113",
+                "datacard_output"       :	"2D_MjjCR_0p1_autoRebinTrue_threshold0_fractionInf_20210128_newdatacard",
         }
 
 
@@ -47,7 +82,8 @@ directory_dict =	[
         #}
 			]
 
-directory = directory_dict[0]
+#directory = directory_dict[0]
+directory = directory_dict[1]
 
 out_prefix = "har_test"  ##Outfile names are {prefix}_{channel}_M{mass}_shapes.root
 
@@ -77,7 +113,8 @@ if create_shapes:
       infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NNvsHME_nnout_{tr}_nnstep{nnstep}_nncut0p0_HME1p15_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
       #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NN_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
       #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_HME_nnout_{tr}cut{nncut}_SignalM{m}.root".format(tr = train, nncut = directory["raw_file_nnstep"], m = mass)
-      #infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NN_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
+      if directory["dimension"] == 1:
+	  infile_name = indir+"Hhh_FinalBGYield_xsec1pb_NN_nnout_{tr}_nnstep{nnstep}_nncut0p0_SignalM{m}.root".format(m = mass, tr = train, nnstep = directory["raw_file_nnstep"])
       infile = ROOT.TFile.Open(infile_name)
       for channel in channellist:
         os.system("mkdir -p {out_folder}/{tr}/{m}".format(tr = train, m = mass, out_folder = out_folder))
@@ -135,7 +172,7 @@ if create_datacards:
       inputdir = directory["shapes_output"]
       outputdir = directory["datacard_output"]
       print "Running M", m, " tr ", tr, " from ", inputdir, " to ", outputdir
-      os.system("HHbblvlv --input_folder={inputdir} --output_folder={outputdir} --mass={mass} --training={train} --file_prefix={prefix} --auto_rebin={auto_rebin}".format(inputdir = inputdir, mass = m, train = tr, outputdir = outputdir, prefix = out_prefix, auto_rebin = auto_rebin))
+      os.system("HHbblvlv --input_folder={inputdir} --output_folder={outputdir} --mass={mass} --training={train} --file_prefix={prefix} --auto_rebin={auto_rebin} --bin_thresh={bin_thresh} --bin_errfrac={bin_errfrac}".format(inputdir = inputdir, mass = m, train = tr, outputdir = outputdir, prefix = out_prefix, auto_rebin = auto_rebin, bin_thresh = bin_thresh, bin_errfrac = bin_errfrac))
 
 
 
@@ -200,13 +237,16 @@ if plot_sig_bkg:
         h_data.SetMarkerStyle(20)
         h_data.SetMarkerColor(1)
         h_data.SetLineColor(1)
-        legend.AddEntry(h_data, "Signal", "p")
+        h_data.Scale(1000.0)## scale the signal up to 1000pb for plotting
+        legend.AddEntry(h_data, "Signal,1fb", "p")
 
 
         ROOT.gStyle.SetPadLeftMargin(0.13)
         c1 = ROOT.TCanvas("c", "c", 1600, 600)
         c1.Clear()
         pad1 = ROOT.TPad("pad1", "pad1", 0, 0, 1, 1.0)
+        pad1.SetGridx()
+        pad1.SetGridy()
         #pad1.SetBottomMargin(.02)
         pad1.Draw()
         pad1.cd()
@@ -217,9 +257,9 @@ if plot_sig_bkg:
         h_data.Draw("epsame")
         pad1.SetLogy()
         legend.Draw("same")
-        os.system("mkdir -p {filedir}plots/".format(filedir = filedir))
-        c1.SaveAs(filedir+"plots/{ch}.pdf".format(ch = channel))
-        print "Saved to ", filedir, "plots/", channel, ".pdf"
+        #os.system("mkdir -p {filedir}plots/".format(filedir = filedir))
+        c1.SaveAs(filedir+"M{m}_{tr}_{ch}.pdf".format(ch = channel, m=mass, tr=tr))
+        #print "Saved to ", filedir, "plots/", channel, ".pdf"
 
 
 
@@ -232,7 +272,8 @@ if create_limits_scripts:
   print "Starting to create scripts"
   ################## Create scripts to run combine jobs
   out_folder = pwd+directory["datacard_output"]
-  channellist = ["ElEl", "MuEl", "MuMu", "ElEl_MuEl_MuMu"]
+  channellist = ["ElEl", "MuEl", "MuMu", "ElEl_MuEl_MuMu","ElEl_MuMu"]
+  #channellist = ["ElEl_MuMu"]
 
   fname_all = out_folder+"/Run_all_scripts.sh"
   cname_all = out_folder+"/Run_all_condors.sh"
@@ -262,6 +303,11 @@ if create_limits_scripts:
           script.write("# If ElEL MuEl MuMu channel and needs datacard, create\n")
           script.write("if [ ! -f GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt ]; then\n".format(tr = train, m = mass, ch = channel))
           script.write("combineCards.py *.txt &> GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt\n".format(tr = train, m = mass, ch = channel))
+          script.write("fi\n\n")
+        if channel == "ElEl_MuMu":
+          script.write("# If ElEL MuMu channel and needs datacard, create\n")
+          script.write("if [ ! -f GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt ]; then\n".format(tr = train, m = mass, ch = channel))
+          script.write("combineCards.py GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_MuMu_1_13TeV.txt GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_ElEl_1_13TeV.txt &> GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt\n".format(tr = train, m = mass, ch = channel))
           script.write("fi\n\n")
         script.write("# If workspace does not exist, create it once\n")
         script.write("if [ ! -f {out_prefix}_{ch}_M{m}_combine_workspace.root ]; then\n".format(ch = channel, m = mass, out_prefix = out_prefix))
@@ -301,7 +347,8 @@ if create_impacts_scripts:
   print "Starting to create impacts scripts"
   ################## Create scripts to run combine jobs
   out_folder = pwd+directory["datacard_output"]
-  channellist = ["ElEl", "MuEl", "MuMu", "ElEl_MuEl_MuMu"]
+  channellist = ["ElEl", "MuEl", "MuMu", "ElEl_MuEl_MuMu","ElEl_MuMu"]
+  #channellist = ["ElEl_MuMu"]
 
   fname_all = out_folder+"/Run_all_impacts_scripts.sh"
   cname_all = out_folder+"/Run_all_impacts_condors.sh"
@@ -331,6 +378,11 @@ if create_impacts_scripts:
           script.write("# If ElEL MuEl MuMu channel and needs datacard, create\n")
           script.write("if [ ! -f GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt ]; then\n".format(tr = train, m = mass, ch = channel))
           script.write("combineCards.py *.txt &> GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt\n".format(tr = train, m = mass, ch = channel))
+          script.write("fi\n\n")
+        if channel == "ElEl_MuMu":
+          script.write("# If ElEL MuMu channel and needs datacard, create\n")
+          script.write("if [ ! -f GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt ]; then\n".format(tr = train, m = mass, ch = channel))
+          script.write("combineCards.py GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_MuMu_1_13TeV.txt GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_ElEl_1_13TeV.txt &> GGToX0ToHHTo2B2L2Nu_{tr}_M{m}_{ch}_1_13TeV.txt\n".format(tr = train, m = mass, ch = channel))
           script.write("fi\n\n")
         script.write("# If workspace does not exist, create it once\n")
         script.write("if [ ! -f {out_prefix}_{ch}_M{m}_combine_workspace.root ]; then\n".format(ch = channel, m = mass, out_prefix = out_prefix))

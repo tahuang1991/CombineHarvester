@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
   string train="MTonly";
   string file_prefix="test";
   bool auto_rebin = false;
+  float bin_thresh = 0.0;
+  float bin_errfrac = 1.0; 
   bool manual_rebin = false;
   bool real_data = false;
   int control_region = 0;
@@ -85,6 +87,8 @@ int main(int argc, char** argv) {
     ("input_folder", po::value<string>(&input_folder)->default_value("GGToX0ToHHTo2B2L2Nu_NoMjjbinsMjjcut_nnout_MTandMT2_MJJ_nnstep0p04_nncut0p0_limits"))
     ("postfix", po::value<string>(&postfix)->default_value("th1shapes"))
     ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(false))
+    ("bin_thresh", po::value<float>(&bin_thresh)->default_value(0.0))
+    ("bin_errfrac", po::value<float>(&bin_errfrac)->default_value(1.0))
     ("real_data", po::value<bool>(&real_data)->default_value(false))
     ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(false))
     ("output_folder", po::value<string>(&output_folder)->default_value("HHbblvlv_output/"))
@@ -197,11 +201,13 @@ int main(int argc, char** argv) {
 
   cb.cp().channel({"MuEl"}).process({"Drell_Yan"}).AddSyst(cb, "dy_mc_xsec", "lnN", SystMap<>::init(1.05));
 
-  std::cout << "Testing here " << std::endl;
-  cb.cp().AddSyst(cb,      "dy_rwgt_norm_$channel", "lnN", SystMap<channel, process>::init
+  //std::cout << "Testing here " << std::endl;
+  cb.cp().AddSyst(cb,      "dy_rwgt_norm_MuMu", "lnN", SystMap<channel, process>::init
 	  ({"MuMu"}, {"data_untagged"},      1.05)
 	  ({"MuMu"}, {"TTbar_untagged"},     1.05)
 	  ({"MuMu"}, {"SingleTop_untagged"}, 1.05)
+	  );
+  cb.cp().AddSyst(cb,      "dy_rwgt_norm_ElEl", "lnN", SystMap<channel, process>::init
 	  ({"ElEl"}, {"data_untagged"},      1.05)
 	  ({"ElEl"}, {"TTbar_untagged"},     1.05)
 	  ({"ElEl"}, {"SingleTop_untagged"}, 1.05)
@@ -210,7 +216,7 @@ int main(int argc, char** argv) {
   for(auto chn : chns){
     for (auto bkg : bkg_procs[chn]){
       if (bkg != "data_untagged"){
-        std::cout << "Data untagged part " << std::endl;
+        //std::cout << "Data untagged part " << std::endl;
         cb.cp().process({bkg}).AddSyst(cb, "CMS_eff_mu", "shape", SystMap<channel>::init
 	  ({"MuMu"}, 1.00)
 	  ({"MuEl"}, 1.00));
@@ -318,9 +324,10 @@ int main(int argc, char** argv) {
   //}
 
 
+  std::cout <<"Rebin Configuration bin_thresh "<< bin_thresh << " bin_errfrac "<< bin_errfrac << std::endl;
   auto rebin = ch::AutoRebin()
-    .SetBinThreshold(0.0)
-    .SetBinUncertFraction(0.3)
+    .SetBinThreshold(bin_thresh)
+    .SetBinUncertFraction(bin_errfrac)
     .SetRebinMode(1)
     .SetPerformRebin(true)
     .SetVerbosity(1);
